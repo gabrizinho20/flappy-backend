@@ -38,26 +38,27 @@ app.get('/api/placar', (req, res) => {
   res.json(top5);
 });
 
-// Salvar/Atualizar pontos
+// Salvar ou Atualizar pontos
 app.post('/api/placar', (req, res) => {
   const { nome, pontos } = req.body;
   if (nome && typeof pontos === 'number') {
     const nomeLimpo = String(nome).trim().substring(0, 10);
     
+    // Procura se o jogador já existe na lista
     const jogadorExistente = placar.find(p => p.nome.toLowerCase() === nomeLimpo.toLowerCase());
 
     if (jogadorExistente) {
+      // Se já existe e fez pontuação MAIOR, atualiza
       if (pontos > jogadorExistente.pontos) {
         jogadorExistente.pontos = pontos;
       }
     } else {
+      // Se não existe, cria um novo
       placar.push({ nome: nomeLimpo, pontos });
     }
 
-    // Salva no arquivo toda vez que entra ponto novo
-    salvarPlacarArquivo(placar);
+    if (typeof salvarPlacarArquivo === 'function') {
+      salvarPlacarArquivo(placar);
+    }
   }
   res.json({ ok: true });
-});
-
-app.listen(process.env.PORT || 3000);
